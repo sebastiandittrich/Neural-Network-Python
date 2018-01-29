@@ -9,8 +9,16 @@ class NonLinear:
             return x*(1-x)
         return 1/(1+np.exp(-x))
 
+    @staticmethod
+    def softmax(x, deriv = False):
+        if deriv is True:
+            pass
+        e_x = np.exp(x - np.max(x))
+        return e_x / e_x.sum(axis=0)
+
 class NeuralNetwork:
-    def __init__(self, dimensions):
+    def __init__(self, dimensions, mutate_rate = 0):
+        self.mutate_rate = mutate_rate
         if type(dimensions) is str:
             self.load_weights(dimensions)
         else:
@@ -18,8 +26,43 @@ class NeuralNetwork:
             self.__dimensions = dimensions
             self.randomize_weights()
 
+    def mutate(self):
+        for row in range(len(self.__weights)):
+            for column in range(len(self.__weights[row])):
+                for weight in range(len(self.__weights[row][column])):
+                    ran = np.random.rand()
+                    if ran < self.mutate_rate:
+                        self.__weights[row][column][weight] = self.__weights[row][column][weight] * ((np.random.rand() * 4) - 2)
+                        if self.__weights[row][column][weight] >= 1:
+                            self.__weights[row][column][weight] = 0.999999
+                        elif self.__weights[row][column][weight] <= -1:
+                            self.__weights[row][column][weight] = -0.999999
+
+    def cross(self, other):
+        nn = NeuralNetwork([1,1])
+        new = []
+        for row in range(len(self.__weights)):
+            new.append([])
+            for column in range(len(self.__weights[row])):
+                if(np.random.rand() < 0.5):
+                    new[-1].append(self.__weights[row][column])
+                else:
+                    new[-1].append(other.get_weights()[row][column])
+        nn.set_weights(new)
+        return nn
+
+
+    # def get_weight_dimensions(self):
+    #     res = []
+    #     for row in self.__weights:
+    #         res.append(len(row))
+    #     return res
+
     def load_weights(self, filename):
         self.__weights = json.loads(open(filename, 'r').read())
+
+    def set_weights(self, weights):
+        self.__weights = weights
 
     def get_weights(self):
         return self.__weights
@@ -31,7 +74,7 @@ class NeuralNetwork:
         open(filename, 'w').write(json.dumps(prepared_weights))
 
     def randomize_weights(self):
-        np.random.seed(1)
+        # np.random.seed(1)
         # self.__weights.append(np.array([[0.1,0.2,0.3], [0.4,0.5,0.6], [0.15,0.14,0.13]]))
         # self.__weights.append(np.array([[0.1,0.2,0.3], [0.4,0.5,0.6], [0.15,0.14,0.13]]))
         # self.__weights.append(np.array([[0.45], [0.134], [0.145]]))

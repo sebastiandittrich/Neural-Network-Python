@@ -1,7 +1,4 @@
-from TicTacToe import Snake
+from TicTacToe import Board
 
-s = Snake(10,20)
-
-s.print()
-s.move('up')
-s.print()
+b = Board()
+b.show()
